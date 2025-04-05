@@ -12,6 +12,12 @@ def human_delay():
     time.sleep(random.uniform(0.5, 2.0))
 
 
+# функция для проверки на ниличие елемента (чтоб не повторять .count() else None каждый раз и присваивать значение в одну строку, а не в две)
+def get_text_or_none(page, selector):
+    locator = page.locator(selector).first
+    return locator.inner_text() if locator.count() else None
+
+
 with sync_playwright() as p:
     browser = p.chromium.launch(
         headless=False,
@@ -63,16 +69,16 @@ with sync_playwright() as p:
         page.wait_for_selector("xpath=//*[@class='desktop']//*[contains(@class, 'title__font')]")
 
 
-        product['title'] = page.locator("xpath=//h1[contains(@class, 'title__font')]").first.inner_text()
+        product['title'] = get_text_or_none(page, "xpath=//h1[contains(@class, 'title__font')]")
 
-        product['color'] = page.locator("xpath=//span[contains(text(), 'Колір')]/following-sibling::span").first.inner_text()
-        product['memory'] = page.locator("xpath=//span[contains(text(), 'Вбудована')]/following-sibling::span").first.inner_text()
+        product['color'] = get_text_or_none(page, "xpath=//span[contains(text(), 'Колір')]/following-sibling::span")
+        product['memory'] = get_text_or_none(page, "xpath=//span[contains(text(), 'Вбудована')]/following-sibling::span")
 
-        product['default_price'] = page.locator("xpath=//*[contains(@class, 'product-price__small')]").first.inner_text()
-        product['discount_price'] = page.locator("xpath=//*[contains(@class, 'product-price__big')]").first.inner_text()
+        product['default_price'] = get_text_or_none(page, "xpath=//*[contains(@class, 'product-price__small')]")
+        product['discount_price'] = get_text_or_none(page, "xpath=//*[contains(@class, 'product-price__big')]")
 
-        item_code = page.locator("xpath=//*[@class='desktop']//div[@class='rating text-base']//span").first
-        product['item_code'] = ''.join(filter(str.isdigit, item_code.inner_text()))
+        item_code = get_text_or_none(page, "xpath=//*[@class='desktop']//div[@class='rating text-base']//span")
+        product['item_code'] = ''.join(filter(str.isdigit, item_code))
 
         images = []
         for img in page.locator("xpath=//div[@class='product-about__left']//img[contains(@src, 'goods/images')]").all():
@@ -83,14 +89,12 @@ with sync_playwright() as p:
 
         product['serial'] = re.search(r"\(([\w\-\/]+)\)", product['title']).group(1)
 
-        display_res = None
         about_section = page.locator("xpath=//*[contains(@class, 'product-about__sticky')]").first
         if about_section.count() > 0:
             display_element = about_section.locator("xpath=.//*[contains(@class, 'mt-4')]").first
             display_text = display_element.inner_text() if display_element.count() > 0 else None
             if display_text:
                 product['display_res'] = re.search(r"\b(\d+x\d+)\b", display_text).group(1)
-
 
 
         page.goto('https://rozetka.com.ua/ua/apple-iphone-15-128gb-black/p395460480/characteristics/')
@@ -106,8 +110,8 @@ with sync_playwright() as p:
             value_element = item.locator("xpath=.//*[contains(@class, 'value')]").first
 
             if title_element.count() > 0 and value_element.count() > 0:
-                title = title_element.inner_text()
-                value = value_element.inner_text()
+                title = title_element.inner_text() if title_element.count() else None
+                value = value_element.inner_text() if value_element.count() else None
                 specs[title] = value
 
         product['item_spec'] = specs
