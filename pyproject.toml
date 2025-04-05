@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "test-taska-2"
+version = "0.1.0"
+description = ""
+authors = ["Alexander Ivanitskiy <negalapetrovna77@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+requests = "^2.32.3"
+openpyxl = "^3.1.5"
+selenium = "^4.30.0"
+playwright = "^1.51.0"
+beautifulsoup4 = "^4.13.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
